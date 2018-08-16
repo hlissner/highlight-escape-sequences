@@ -222,7 +222,7 @@ Currently handles:
     (coffee-mode     . hes-js-escape-sequence-re)
     (ruby-mode       . hes-ruby-escape-sequence-keywords)
     (enh-ruby-mode   . hes-ruby-escape-sequence-keywords)
-    (python-mode     . hes-python-escape-sequence-keywords)
+    (python-mode     . hes-python-escape-sequence-re)
     (emacs-lisp-mode . hes-elisp-escape-sequence-re)
     (t . hes-fallback-escape-sequence-re))
   "An alist mapping major modes to font-lock rules.
