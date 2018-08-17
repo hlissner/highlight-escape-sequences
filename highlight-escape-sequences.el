@@ -277,7 +277,11 @@ If there is no matching major mode, fall back to the entry whose CAR is t."
         (setq keywords (hes--build-escape-sequence-keywords keywords)))
       (if highlight-escape-sequences-mode
           (font-lock-add-keywords nil keywords)
-        (font-lock-remove-keywords nil keywords)))))
+        (font-lock-remove-keywords nil keywords))
+      (when font-lock-mode
+        (if (fboundp 'font-lock-flush)
+            (font-lock-flush)
+          (with-no-warnings (font-lock-fontify-buffer)))))))
 
 ;;;###autoload
 (define-globalized-minor-mode global-highlight-escape-sequences-mode
