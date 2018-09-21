@@ -53,10 +53,10 @@
   "Highlight escape sequences."
   :group 'convenience)
 
-(defface hes-escape-backslash-face
-  '((t :inherit font-lock-regexp-grouping-backslash))
-  "Face to highlight an escape backslash."
-  :group 'hes-mode)
+;; (defface hes-escape-backslash-face
+;;   '((t :inherit font-lock-regexp-grouping-backslash))
+;;   "Face to highlight an escape backslash."
+;;   :group 'hes-mode)
 
 (defface hes-escape-sequence-face
   '((t :inherit font-lock-regexp-grouping-construct))
@@ -71,11 +71,11 @@
 (defvar hes-fallback-escape-sequence-re
   (eval-when-compile
     (rx (submatch
-         (and ?\\ (submatch
-                   (or (repeat 1 3 (in "0-7"))
-                       (and ?x (repeat 2 xdigit))
-                       (and ?u (repeat 4 xdigit))
-                       (any "\"\'\\bfnrtv")))))))
+         (and ?\\
+              (or (repeat 1 3 (in "0-7"))
+                  (and ?x (repeat 2 xdigit))
+                  (and ?u (repeat 4 xdigit))
+                  (any "\"\'\\bfnrtv"))))))
   "Fallback regexp to match the most common escape sequences.
 
 Currently handles:
@@ -87,12 +87,12 @@ Currently handles:
 (defvar hes-c/c++/objc-escape-sequence-re
   (eval-when-compile
     (rx (submatch
-         (and ?\\ (submatch
-                   (or (repeat 1 3 (in "0-7"))
-                       (and ?x (1+ xdigit))
-                       (and ?u (repeat 4 xdigit))
-                       (and ?U (repeat 8 xdigit))
-                       (any "\"\'\?\\abfnrtv")))))))
+         (and ?\\
+              (or (repeat 1 3 (in "0-7"))
+                  (and ?x (1+ xdigit))
+                  (and ?u (repeat 4 xdigit))
+                  (and ?U (repeat 8 xdigit))
+                  (any "\"\'\?\\abfnrtv"))))))
   "Regexp to match C/C++/ObjC escape sequences.
 
 Currently handles:
@@ -104,10 +104,10 @@ Currently handles:
 (defvar hes-java-escape-sequence-re
   (eval-when-compile
     (rx (submatch
-         (and ?\\ (submatch
-                   (or (repeat 1 3 (in "0-7"))
-                       (and ?u (repeat 4 xdigit))
-                       (any "\"\'\\bfnrt")))))))
+         (and ?\\
+              (or (repeat 1 3 (in "0-7"))
+                  (and ?u (repeat 4 xdigit))
+                  (any "\"\'\\bfnrt"))))))
   "Regexp to match Java escape sequences.
 
 Currently handles:
@@ -118,12 +118,12 @@ Currently handles:
 (defvar hes-js-escape-sequence-re
   (eval-when-compile
     (rx (submatch
-         (and ?\\ (submatch
-                   (or (repeat 1 3 (in "0-7"))
-                       (and ?x (repeat 2 xdigit))
-                       (and ?u (repeat 4 xdigit))
-                       ;; (any "\"\'\\bfnrtv")
-                       not-newline)))))) ;; deprecated
+         (and ?\\
+              (or (repeat 1 3 (in "0-7"))
+                  (and ?x (repeat 2 xdigit))
+                  (and ?u (repeat 4 xdigit))
+                  ;; (any "\"\'\\bfnrtv")
+                  not-newline))))) ;; deprecated
   "Regexp to match JavaScript escape sequences.
 
 Currently handles:
@@ -166,12 +166,10 @@ Currently doesn't handle \\C-, \\M-, etc.")
                     (if (fboundp 'ruby-syntax-expansion-allowed-p)
                         (ruby-syntax-expansion-allowed-p state)
                       (memq term '(?\" ?/ ?\n ?` t))))
-            ;; TODO: Switch to `add-face-text-property' when we're fine with
-            ;; only supporting Emacs 24.4 and up.
-            (font-lock-prepend-text-property (match-beginning 1) (match-end 1)
-                                             'face 'hes-escape-backslash-face)
-            (font-lock-prepend-text-property (match-beginning 2) (match-end 2)
-                                             'face 'hes-escape-sequence-face)
+            ;; (add-face-text-property (match-beginning 1) (match-end 1)
+            ;;                         'hes-escape-backslash-face 'append)
+            (add-face-text-property (match-beginning 1) (match-end 1)
+                                    'hes-escape-sequence-face 'append)
             nil))
         prepend))))
 
@@ -179,14 +177,13 @@ Currently doesn't handle \\C-, \\M-, etc.")
   (eval-when-compile
     (rx (submatch
          (and ?\\
-              (submatch
-               (or (and ?u (repeat 4 xdigit))
-                   (and ?U ?0 ?0 (repeat 6 xdigit))
-                   (and ?x (+ xdigit)) ; variable number hex digits
-                   (and (or ?C ?S ?A) ?- not-newline)  ; modifier & key escape codes
-                   (+ (in "0-7"))      ; variable number octal digits
-                   ;; TODO Add magic regexp symbols?
-                   not-newline))))))
+              (or (and ?u (repeat 4 xdigit))
+                  (and ?U ?0 ?0 (repeat 6 xdigit))
+                  (and ?x (+ xdigit)) ; variable number hex digits
+                  (and (or ?C ?S ?A ?M) ?- not-newline)  ; modifier & key escape codes
+                  (+ (in "0-7"))      ; variable number octal digits
+                  ;; TODO Add magic regexp symbols?
+                  not-newline)))))
   "Regexp to match Emacs Lisp escape sequences.
 
 Currently handles:
@@ -198,13 +195,13 @@ Currently handles:
 (defvar hes-python-escape-sequence-re
   (eval-when-compile
     (rx (submatch
-         (and ?\\ (submatch
-                   (or (repeat 1 3 (in "0-7"))
-                       (and ?x (repeat 2 xdigit))
-                       (and ?u (repeat 4 xdigit))
-                       (and ?U (repeat 8 xdigit))
-                       (and ?N "{" (one-or-more alpha) "}")
-                       (any "\"\'\\abfnrtv")))))))
+         (and ?\\
+              (or (repeat 1 3 (in "0-7"))
+                  (and ?x (repeat 2 xdigit))
+                  (and ?u (repeat 4 xdigit))
+                  (and ?U (repeat 8 xdigit))
+                  (and ?N "{" (one-or-more alpha) "}")
+                  (any "\"\'\\abfnrtv"))))))
   "Regexp to match Python escape sequences.")
 
 ;;
@@ -243,9 +240,6 @@ If there is no matching major mode, fall back to the entry whose CAR is t."
 (defun hes--build-escape-sequence-keywords (re)
   `((,re
      (1 (when (nth 3 (syntax-ppss))
-          'hes-escape-backslash-face)
-        prepend)
-     (2 (when (nth 3 (syntax-ppss))
           'hes-escape-sequence-face)
         prepend))))
 
